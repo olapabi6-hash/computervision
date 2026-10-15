@@ -247,7 +247,7 @@
             </div>
         </div>
 
-        <!-- Panel Operasi Geometri (Resize, Rotate, Warp Affine, Flip) -->
+        <!-- Panel Operasi Geometri -->
         <div class="control-group">
             <div class="section-title">Operasi Geometri Lanjutan</div>
             <div class="geo-grid" style="margin-bottom: 10px;">
@@ -256,19 +256,16 @@
                 <button class="action-btn" onclick="resetGeometry()">↺ Reset Geometri</button>
             </div>
             <div class="geo-grid" style="gap: 15px;">
-                <!-- Resize Slider -->
                 <div class="slider-container">
                     <label>Resize Scale:</label>
                     <input type="range" id="resizeRange" min="0.25" max="2.0" step="0.25" value="1.0" oninput="updateResize(this.value)">
                     <span id="resizeVal">100%</span>
                 </div>
-                <!-- Rotate Slider -->
                 <div class="slider-container">
                     <label>Rotate:</label>
                     <input type="range" id="rotateRange" min="-180" max="180" step="5" value="0" oninput="updateRotate(this.value)">
                     <span id="rotateVal">0°</span>
                 </div>
-                <!-- Warp Affine Slider (Shear) -->
                 <div class="slider-container">
                     <label>Warp Affine (Shear):</label>
                     <input type="range" id="warpRange" min="-0.5" max="0.5" step="0.1" value="0.0" oninput="updateWarp(this.value)">
@@ -299,10 +296,9 @@
         let loadedImage = null;
         let animationFrameId = null;
 
-        // Parameter Geometri
         let scaleFactor = 1.0;
-        let rotateAngle = 0;       // dalam derajat
-        let warpShear = 0.0;       // parameter shear untuk affine
+        let rotateAngle = 0;        
+        let warpShear = 0.0;       
         let flipH = false;
         let flipV = false;
 
@@ -322,7 +318,6 @@
             ctx.fillText('Silakan unggah gambar atau aktifkan kamera web', canvas.width / 2, canvas.height / 2);
         }
 
-        // Unggah Gambar Lokal
         imageLoader.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -337,7 +332,6 @@
                     baseWidth = loadedImage.width;
                     baseHeight = loadedImage.height;
 
-                    // Batasi ukuran dasar maksimum agar aman di layar
                     const maxW = 800;
                     if (baseWidth > maxW) {
                         baseHeight = (maxW / baseWidth) * baseHeight;
@@ -354,7 +348,6 @@
             reader.readAsDataURL(file);
         });
 
-        // Kontrol Kamera Web
         async function toggleWebcam() {
             if (currentMode === 'webcam') {
                 stopWebcam();
@@ -362,7 +355,14 @@
                 drawPlaceholder();
             } else {
                 try {
-                    stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+                    // Cek dukungan browser terhadap mediaDevices
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error("Browser Anda tidak mendukung akses kamera atau tidak menggunakan koneksi HTTPS.");
+                    }
+
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { width: { ideal: 1280 }, height: { ideal: 720 } } 
+                    });
                     video.srcObject = stream;
                     currentMode = 'webcam';
                     document.getElementById('webcamBtn').innerText = "🛑 Hentikan Kamera";
@@ -376,7 +376,8 @@
                         renderLoop();
                     };
                 } catch (err) {
-                    alert("Gagal mengakses kamera: " + err.message);
+                    alert("Gagal mengakses kamera: " + err.message + "\nPastikan Anda mengakses halaman ini melalui HTTPS dan telah memberikan izin akses.");
+                    currentMode = 'none';
                 }
             }
         }
@@ -390,7 +391,9 @@
                 cancelAnimationFrame(animationFrameId);
             }
             document.getElementById('webcamBtn').innerText = "📷 Buka Kamera Web";
-            currentMode = 'none';
+            if (currentMode === 'webcam') {
+                currentMode = 'none';
+            }
         }
 
         function resetGeoValues() {
@@ -412,7 +415,6 @@
             canvas.height = Math.round(baseHeight * scaleFactor);
         }
 
-        // Loop Render Webcam Real-Time
         function renderLoop() {
             if (currentMode === 'webcam') {
                 drawImageWithGeometry(video);
@@ -438,7 +440,6 @@
             }
         }
 
-        // --- HANDLER GEOMETRI ---
         function updateResize(val) {
             scaleFactor = parseFloat(val);
             document.getElementById('resizeVal').innerText = Math.round(scaleFactor * 100) + '%';
@@ -474,7 +475,6 @@
             if (currentMode === 'image') processImage();
         }
 
-        // --- EKsekusi Geometri (Resize, Rotate, Affine Warp, Flip) ---
         function drawImageWithGeometry(source) {
             ctx.save();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -482,28 +482,18 @@
             const w = canvas.width;
             const h = canvas.height;
 
-            // Pindahkan titik tumpu ke tengah canvas untuk rotasi & transformasi affine yang rapi
             ctx.translate(w / 2, h / 2);
-
-            // 1. Rotasi
             ctx.rotate((rotateAngle * Math.PI) / 180);
-
-            // 2. Warp Affine (Shear / Miring pada sumbu X)
-            // Matriks Affine 2D: [scaleX, shearY, shearX, scaleY, translateX, translateY]
             ctx.transform(1, 0, warpShear, 1, 0, 0);
 
-            // 3. Flip
             let scaleX = flipH ? -1 : 1;
             let scaleY = flipV ? -1 : 1;
             ctx.scale(scaleX, scaleY);
 
-            // Gambar sumber dengan ukuran yang sudah disesuaikan skala resize di tengah
             ctx.drawImage(source, -w / 2, -h / 2, w, h);
-
             ctx.restore();
         }
 
-        // --- PEMROSESAN PIKSEL FILTER ---
         function applyFilterToCanvas() {
             if (currentFilter === 'normal') return;
 
@@ -540,4 +530,49 @@
                 const copy = new Uint8ClampedArray(data);
                 for (let y = 1; y < h - 1; y++) {
                     for (let x = 1; x < w - 1; x++) {
-                        let
+                        let idx = (y * w + x) * 4;
+                        // Sederhana deteksi tepi (Sobel vertikal/horizontal aproksimasi)
+                        let leftIdx = (y * w + (x - 1)) * 4;
+                        let rightIdx = (y * w + (x + 1)) * 4;
+                        
+                        let rDiff = Math.abs(copy[rightIdx] - copy[leftIdx]);
+                        let gDiff = Math.abs(copy[rightIdx + 1] - copy[leftIdx + 1]);
+                        let bDiff = Math.abs(copy[rightIdx + 2] - copy[leftIdx + 2]);
+                        
+                        let edgeVal = (rDiff + gDiff + bDiff) / 3;
+                        data[idx] = edgeVal;
+                        data[idx + 1] = edgeVal;
+                        data[idx + 2] = edgeVal;
+                    }
+                }
+            } else if (currentFilter === 'bokeh') {
+                // Efek sederhana blur / bokeh via pengurangan kontras kasar atau skip piksel
+                // Menggunakan efek rata-rata sederhana pada piksel sekitar
+                const copy = new Uint8ClampedArray(data);
+                let radius = 2;
+                for (let y = radius; y < h - radius; y += radius) {
+                    for (let x = radius; x < w - radius; x += radius) {
+                        let idx = (y * w + x) * 4;
+                        data[idx] = copy[idx];
+                        data[idx+1] = copy[idx+1];
+                        data[idx+2] = copy[idx+2];
+                    }
+                }
+            }
+
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function downloadImage() {
+            if (currentMode === 'none') {
+                alert("Tidak ada gambar atau video untuk diunduh.");
+                return;
+            }
+            const link = document.createElement('a');
+            link.download = 'hasil-pemrosesan-citra.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
