@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Pemrosesan Citra & Geometri Lanjutan</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 950px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text);
+            margin-bottom: 6px;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .input-controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--border);
+        }
+
+        .btn-success {
+            background-color: var(--accent);
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .preview-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #090d16;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            min-height: 350px;
+            margin-bottom: 20px;
+            overflow: auto;
+            position: relative;
+            padding: 10px;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 480px;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .control-group {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .filter-grid, .geo-grid {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-btn, .action-btn {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            color: white;
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .action-btn:hover {
+            color: white;
+            border-color: #3b82f6;
+            background: #1e40af;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .slider-container input[type="range"] {
+            cursor: pointer;
+        }
+
+        .bottom-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .status {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        video {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Pemrosesan Citra & Geometri Lanjutan</h1>
+        <p class="subtitle">Filter Warna, Bokeh, Resize, Rotate, Warp Affine, dan Flip</p>
+
+        <!-- Tombol Sumber Input -->
+        <div class="input-controls">
+            <label for="imageLoader" class="btn">
+                📁 Pilih Gambar
+            </label>
+            <input type="file" id="imageLoader" accept="image/*">
+
+            <button class="btn btn-outline" id="webcamBtn" onclick="toggleWebcam()">
+                📷 Buka Kamera Web
+            </button>
+        </div>
+
+        <!-- Area Tampilan Canvas -->
+        <div class="preview-area">
+            <canvas id="outputCanvas"></canvas>
+            <video id="videoElement" autoplay playsinline></video>
+        </div>
+
+        <!-- Panel Filter Citra -->
+        <div class="control-group">
+            <div class="section-title">Filter Warna & Efek</div>
+            <div class="filter-grid">
+                <button class="filter-btn active" onclick="setFilter('normal', this)">Normal</button>
+                <button class="filter-btn" onclick="setFilter('grayscale', this)">Grayscale</button>
+                <button class="filter-btn" onclick="setFilter('binary', this)">Black & White</button>
+                <button class="filter-btn" onclick="setFilter('sepia', this)">Sepia</button>
+                <button class="filter-btn" onclick="setFilter('invert', this)">Invert</button>
+                <button class="filter-btn" onclick="setFilter('edge', this)">Deteksi Tepi</button>
+                <button class="filter-btn" onclick="setFilter('bokeh', this)">✨ Bokeh (Blur)</button>
+            </div>
+        </div>
+
+        <!-- Panel Operasi Geometri (Resize, Rotate, Warp Affine, Flip) -->
+        <div class="control-group">
+            <div class="section-title">Operasi Geometri Lanjutan</div>
+            <div class="geo-grid" style="margin-bottom: 10px;">
+                <button class="action-btn" onclick="applyFlip('H')">↔️ Flip Horizontal</button>
+                <button class="action-btn" onclick="applyFlip('V')">↕️ Flip Vertikal</button>
+                <button class="action-btn" onclick="resetGeometry()">↺ Reset Geometri</button>
+            </div>
+            <div class="geo-grid" style="gap: 15px;">
+                <!-- Resize Slider -->
+                <div class="slider-container">
+                    <label>Resize Scale:</label>
+                    <input type="range" id="resizeRange" min="0.25" max="2.0" step="0.25" value="1.0" oninput="updateResize(this.value)">
+                    <span id="resizeVal">100%</span>
+                </div>
+                <!-- Rotate Slider -->
+                <div class="slider-container">
+                    <label>Rotate:</label>
+                    <input type="range" id="rotateRange" min="-180" max="180" step="5" value="0" oninput="updateRotate(this.value)">
+                    <span id="rotateVal">0°</span>
+                </div>
+                <!-- Warp Affine Slider (Shear) -->
+                <div class="slider-container">
+                    <label>Warp Affine (Shear):</label>
+                    <input type="range" id="warpRange" min="-0.5" max="0.5" step="0.1" value="0.0" oninput="updateWarp(this.value)">
+                    <span id="warpVal">0.0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bagian Bawah & Tombol Unduh -->
+        <div class="bottom-actions">
+            <span class="status" id="statusText">Mode: Pilih gambar atau buka kamera.</span>
+            <button class="btn btn-success" onclick="downloadImage()">
+                💾 Unduh Hasil
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const video = document.getElementById('videoElement');
+        const imageLoader = document.getElementById('imageLoader');
+        const statusText = document.getElementById('statusText');
+
+        let currentMode = 'none'; 
+        let currentFilter = 'normal';
+        let stream = null;
+        let loadedImage = null;
+        let animationFrameId = null;
+
+        // Parameter Geometri
+        let scaleFactor = 1.0;
+        let rotateAngle = 0;       // dalam derajat
+        let warpShear = 0.0;       // parameter shear untuk affine
+        let flipH = false;
+        let flipV = false;
+
+        let baseWidth = 600;
+        let baseHeight = 400;
+
+        canvas.width = baseWidth;
+        canvas.height = baseHeight;
+        drawPlaceholder();
+
+        function drawPlaceholder() {
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#64748b';
+            ctx.font = '16px Segoe UI, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Silakan unggah gambar atau aktifkan kamera web', canvas.width / 2, canvas.height / 2);
+        }
+
+        // Unggah Gambar Lokal
+        imageLoader.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            stopWebcam();
+            currentMode = 'image';
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                loadedImage = new Image();
+                loadedImage.onload = function() {
+                    baseWidth = loadedImage.width;
+                    baseHeight = loadedImage.height;
+
+                    // Batasi ukuran dasar maksimum agar aman di layar
+                    const maxW = 800;
+                    if (baseWidth > maxW) {
+                        baseHeight = (maxW / baseWidth) * baseHeight;
+                        baseWidth = maxW;
+                    }
+
+                    resetGeoValues();
+                    updateCanvasDimensions();
+                    statusText.innerText = `Mode: Gambar (${loadedImage.width}x${loadedImage.height}px)`;
+                    processImage();
+                };
+                loadedImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Kontrol Kamera Web
+        async function toggleWebcam() {
+            if (currentMode === 'webcam') {
+                stopWebcam();
+                statusText.innerText = "Kamera dihentikan.";
+                drawPlaceholder();
+            } else {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+                    video.srcObject = stream;
+                    currentMode = 'webcam';
+                    document.getElementById('webcamBtn').innerText = "🛑 Hentikan Kamera";
+                    statusText.innerText = "Mode: Kamera Web Real-Time";
+
+                    video.onloadedmetadata = () => {
+                        baseWidth = video.videoWidth || 640;
+                        baseHeight = video.videoHeight || 480;
+                        resetGeoValues();
+                        updateCanvasDimensions();
+                        renderLoop();
+                    };
+                } catch (err) {
+                    alert("Gagal mengakses kamera: " + err.message);
+                }
+            }
+        }
+
+        function stopWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            document.getElementById('webcamBtn').innerText = "📷 Buka Kamera Web";
+            currentMode = 'none';
+        }
+
+        function resetGeoValues() {
+            scaleFactor = 1.0;
+            rotateAngle = 0;
+            warpShear = 0.0;
+            flipH = false;
+            flipV = false;
+            document.getElementById('resizeRange').value = 1.0;
+            document.getElementById('resizeVal').innerText = "100%";
+            document.getElementById('rotateRange').value = 0;
+            document.getElementById('rotateVal').innerText = "0°";
+            document.getElementById('warpRange').value = 0.0;
+            document.getElementById('warpVal').innerText = "0.0";
+        }
+
+        function updateCanvasDimensions() {
+            canvas.width = Math.round(baseWidth * scaleFactor);
+            canvas.height = Math.round(baseHeight * scaleFactor);
+        }
+
+        // Loop Render Webcam Real-Time
+        function renderLoop() {
+            if (currentMode === 'webcam') {
+                drawImageWithGeometry(video);
+                applyFilterToCanvas();
+                animationFrameId = requestAnimationFrame(renderLoop);
+            }
+        }
+
+        function processImage() {
+            if (currentMode === 'image' && loadedImage) {
+                drawImageWithGeometry(loadedImage);
+                applyFilterToCanvas();
+            }
+        }
+
+        function setFilter(filterType, elem) {
+            currentFilter = filterType;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            elem.classList.add('active');
+
+            if (currentMode === 'image') {
+                processImage();
+            }
+        }
+
+        // --- HANDLER GEOMETRI ---
+        function updateResize(val) {
+            scaleFactor = parseFloat(val);
+            document.getElementById('resizeVal').innerText = Math.round(scaleFactor * 100) + '%';
+            updateCanvasDimensions();
+            if (currentMode === 'image') processImage();
+        }
+
+        function updateRotate(val) {
+            rotateAngle = parseInt(val);
+            document.getElementById('rotateVal').innerText = rotateAngle + '°';
+            if (currentMode === 'image') processImage();
+        }
+
+        function updateWarp(val) {
+            warpShear = parseFloat(val);
+            document.getElementById('warpVal').innerText = warpShear.toFixed(1);
+            if (currentMode === 'image') processImage();
+        }
+
+        function applyFlip(type) {
+            if (currentMode === 'none') {
+                alert("Harap masukkan gambar atau aktifkan kamera terlebih dahulu.");
+                return;
+            }
+            if (type === 'H') flipH = !flipH;
+            if (type === 'V') flipV = !flipV;
+            if (currentMode === 'image') processImage();
+        }
+
+        function resetGeometry() {
+            resetGeoValues();
+            updateCanvasDimensions();
+            if (currentMode === 'image') processImage();
+        }
+
+        // --- EKsekusi Geometri (Resize, Rotate, Affine Warp, Flip) ---
+        function drawImageWithGeometry(source) {
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Pindahkan titik tumpu ke tengah canvas untuk rotasi & transformasi affine yang rapi
+            ctx.translate(w / 2, h / 2);
+
+            // 1. Rotasi
+            ctx.rotate((rotateAngle * Math.PI) / 180);
+
+            // 2. Warp Affine (Shear / Miring pada sumbu X)
+            // Matriks Affine 2D: [scaleX, shearY, shearX, scaleY, translateX, translateY]
+            ctx.transform(1, 0, warpShear, 1, 0, 0);
+
+            // 3. Flip
+            let scaleX = flipH ? -1 : 1;
+            let scaleY = flipV ? -1 : 1;
+            ctx.scale(scaleX, scaleY);
+
+            // Gambar sumber dengan ukuran yang sudah disesuaikan skala resize di tengah
+            ctx.drawImage(source, -w / 2, -h / 2, w, h);
+
+            ctx.restore();
+        }
+
+        // --- PEMROSESAN PIKSEL FILTER ---
+        function applyFilterToCanvas() {
+            if (currentFilter === 'normal') return;
+
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            if (currentFilter === 'grayscale') {
+                for (let i = 0; i < data.length; i += 4) {
+                    let avg = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
+                    data[i] = avg; data[i + 1] = avg; data[i + 2] = avg;
+                }
+            } else if (currentFilter === 'binary') {
+                for (let i = 0; i < data.length; i += 4) {
+                    let avg = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
+                    let val = avg >= 128 ? 255 : 0;
+                    data[i] = val; data[i + 1] = val; data[i + 2] = val;
+                }
+            } else if (currentFilter === 'sepia') {
+                for (let i = 0; i < data.length; i += 4) {
+                    let r = data[i], g = data[i + 1], b = data[i + 2];
+                    data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+                    data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+                    data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+                }
+            } else if (currentFilter === 'invert') {
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = 255 - data[i];
+                    data[i + 1] = 255 - data[i + 1];
+                    data[i + 2] = 255 - data[i + 2];
+                }
+            } else if (currentFilter === 'edge') {
+                const copy = new Uint8ClampedArray(data);
+                for (let y = 1; y < h - 1; y++) {
+                    for (let x = 1; x < w - 1; x++) {
+                        let
