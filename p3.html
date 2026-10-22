@@ -3,340 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Pemrosesan Citra & Geometri Lanjutan</title>
+    <title>Computer Vision Analysis & Processing Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg: #090d16;
-            --card-bg: #111827;
-            --text: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border: rgba(99, 102, 241, 0.3);
-            --accent: #10b981;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: radial-gradient(circle at top, #1e1b4b, #090d16);
-            color: var(--text);
-            padding: 20px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #020617;
+            color: #f8fafc;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        .container {
-            width: 100%;
-            max-width: 980px;
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95));
-            border: 2px solid transparent;
-            border-image: linear-gradient(to bottom right, #6366f1, #38bdf8, #10b981) 1;
-            border-radius: 20px;
-            padding: 28px;
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.2);
-            backdrop-filter: blur(10px);
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        h1 {
-            text-align: center;
-            background: linear-gradient(to right, #818cf8, #38bdf8, #34d399);
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6, #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 6px;
-            font-size: 2rem;
-            font-weight: 800;
         }
 
-        p.subtitle {
-            text-align: center;
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-            font-size: 0.95rem;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
         }
-
-        .input-controls {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.9);
         }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: white;
-            padding: 10px 20px;
-            border: none;
+        ::-webkit-scrollbar-thumb {
+            background: rgba(14, 165, 233, 0.4);
             border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(14, 165, 233, 0.8);
         }
 
-        .btn:hover {
-            background: linear-gradient(135deg, #4f46e5, #4338ca);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.6);
+        input[type=range] {
+            accent-color: #06b6d4;
         }
 
-        .btn-outline {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: var(--text);
-            box-shadow: none;
+        .filter-btn-active {
+            background: linear-gradient(135deg, #0284c7, #4338ca) !important;
+            color: #ffffff !important;
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
         }
 
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #6366f1;
+        .toggle-checkbox:checked {
+            right: 0;
+            background-color: #06b6d4;
         }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn-success:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
-        }
-
-        .preview-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #030712, #0f172a);
-            border: 2px dashed var(--border);
-            border-radius: 14px;
-            min-height: 350px;
-            margin-bottom: 20px;
-            overflow: auto;
-            position: relative;
-            padding: 15px;
-        }
-
-        canvas {
-            max-width: 100%;
-            max-height: 480px;
-            display: block;
-            border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .section-title {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #38bdf8;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .control-group {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .filter-grid, .geo-grid {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-btn, .action-btn {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .filter-btn:hover, .filter-btn.active {
-            color: white;
-            border-color: #6366f1;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        .action-btn:hover {
-            color: white;
-            border-color: #38bdf8;
-            background: #1e40af;
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .slider-container input[type="range"] {
-            cursor: pointer;
-            accent-color: #6366f1;
-        }
-
-        .bottom-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid var(--border);
-            padding-top: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .status {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        video {
-            display: none;
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #0891b2;
         }
     </style>
 </head>
-<body>
+<body class="p-3 sm:p-5 flex justify-center items-center">
 
-    <div class="container">
-        <h1>Pemrosesan Citra & Geometri Lanjutan</h1>
-        <p class="subtitle">Filter Warna, Bokeh, Morfologi, Noise, Border, & Transformasi Geometri</p>
+    <div class="w-full max-w-7xl glass-panel rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden my-auto border border-cyan-500/10">
+        
+        <!-- Ambient Glowing Orbs -->
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <!-- Tombol Sumber Input -->
-        <div class="input-controls">
-            <label for="imageLoader" class="btn">
-                📁 Pilih Gambar
-            </label>
-            <input type="file" id="imageLoader" accept="image/*">
+        <!-- Top Navigation Header -->
+        <header class="flex flex-col lg:flex-row justify-between items-center mb-5 pb-4 border-b border-slate-800 gap-4">
+            <div>
+                <div class="flex items-center gap-2.5">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+                        <i class="fa-solid fa-brain"></i>
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold gradient-text tracking-tight">
+                        CV Edge & Opening Studio
+                    </h1>
+                </div>
+                <p class="text-slate-400 text-xs sm:text-sm mt-1">
+                    Pemrosesan Morfologi Opening & Deteksi Tepi Gradien Interaktif AI
+                </p>
+            </div>
 
-            <button class="btn btn-outline" id="webcamBtn" onclick="toggleWebcam()">
-                📷 Buka Kamera Web
+            <!-- Header Performance Metrics HUD -->
+            <div class="flex flex-wrap items-center gap-3 text-xs mono">
+                <div class="glass-card px-3 py-1.5 rounded-xl border border-cyan-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-cyan-400"></i>
+                    <span class="text-slate-400">FPS:</span>
+                    <span id="hudFps" class="font-bold text-cyan-300">--</span>
+                </div>
+                <div class="glass-card px-3 py-1.5 rounded-xl border border-indigo-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-stopwatch text-indigo-400"></i>
+                    <span class="text-slate-400">Latency:</span>
+                    <span id="hudLatency" class="font-bold text-indigo-300">0.0 ms</span>
+                </div>
+                <div class="glass-card px-3 py-1.5 rounded-xl border border-emerald-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-cubes text-emerald-400"></i>
+                    <span class="text-slate-400">Detections:</span>
+                    <span id="hudDetections" class="font-bold text-emerald-300">0 Items</span>
+                </div>
+            </div>
+
+            <!-- Input Sources & Controls -->
+            <div class="flex items-center gap-2">
+                <label for="imageLoader" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl cursor-pointer transition shadow-lg flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-file-arrow-up"></i> Unggah Gambar
+                </label>
+                <input type="file" id="imageLoader" accept="image/*" class="hidden">
+
+                <button id="webcamBtn" onclick="toggleWebcam()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-video" id="webcamIcon"></i> <span id="webcamBtnText">Kamera Web</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Studio Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            
+            <!-- Center Interactive Display (7 Cols) -->
+            <div class="lg:col-span-7 xl:col-span-8 flex flex-col gap-4">
+                
+                <!-- Main Canvas Viewport -->
+                <div class="relative bg-slate-950 border border-slate-800 rounded-2xl p-3 flex justify-center items-center min-h-[400px] max-h-[560px] overflow-hidden shadow-2xl flex-grow">
+                    <canvas id="outputCanvas" class="max-w-full max-h-[500px] rounded-lg shadow-2xl object-contain transition-all duration-150"></canvas>
+                    <video id="videoElement" autoplay playsinline class="hidden"></video>
+
+                    <!-- On-Screen Caliper Overlay Controls -->
+                    <div class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] mono text-cyan-400 flex items-center gap-2 pointer-events-none">
+                        <i class="fa-solid fa-crosshairs animate-spin" style="animation-duration: 8s;"></i>
+                        <span id="resolutionText">RES: 0x0 PX</span>
+                    </div>
+                </div>
+
+                <!-- CV Filter Live Parameter Adjustments -->
+                <div class="glass-card p-3.5 rounded-2xl grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                        <div class="flex justify-between mb-1 font-medium text-cyan-300">
+                            <span><i class="fa-solid fa-circle-nodes mr-1"></i> Bokeh Blur Radius:</span>
+                            <span id="bokehBlurVal" class="mono font-bold text-cyan-400">8px</span>
+                        </div>
+                        <input type="range" id="bokehBlurRange" min="0" max="30" step="1" value="8" oninput="updateIntensity('bokeh', this.value)" class="w-full cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between mb-1 font-medium text-sky-300">
+                            <span><i class="fa-solid fa-sliders mr-1"></i> B&W Threshold:</span>
+                            <span id="thresholdVal" class="mono font-bold text-sky-400">128</span>
+                        </div>
+                        <input type="range" id="thresholdRange" min="0" max="255" step="1" value="128" oninput="updateIntensity('threshold', this.value)" class="w-full cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between mb-1 font-medium text-amber-300">
+                            <span><i class="fa-solid fa-cubes-stacked mr-1"></i> Noise Level:</span>
+                            <span id="noiseVal" class="mono font-bold text-amber-400">30</span>
+                        </div>
+                        <input type="range" id="noiseRange" min="0" max="100" step="5" value="30" oninput="updateIntensity('noise', this.value)" class="w-full cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Computer Vision Panels (5 Cols) -->
+            <div class="lg:col-span-5 xl:col-span-4 flex flex-col gap-4 overflow-y-auto max-h-[640px] pr-1">
+                
+                <!-- 1. Gradient Edge Overlay & Morphological Opening Customizer -->
+                <div class="glass-card p-4 rounded-2xl border border-cyan-500/30 bg-cyan-950/20">
+                    <div class="text-xs font-bold uppercase tracking-wider text-cyan-300 mb-3 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-cyan-400"></i> Deteksi Tepi Gradien Interaktif</span>
+                        <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full mono">MORFOLOGI</span>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <!-- Toggle Edge Overlay -->
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-cyan-500/30">
+                            <span class="flex items-center gap-2 text-slate-100 font-medium">
+                                <i class="fa-solid fa-wave-square text-cyan-400"></i> Aktifkan Overlay Tepi Gradien
+                            </span>
+                            <input type="checkbox" id="toggleGradientEdge" checked onchange="processFrame()" class="w-4 h-4 rounded accent-cyan-500 cursor-pointer">
+                        </div>
+
+                        <!-- Edge Color Pickers -->
+                        <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                            <div>
+                                <label class="block text-slate-400 text-[11px] mb-1">Warna Utama (P1):</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="edgeColor1" value="#06b6d4" onchange="processFrame()" class="w-8 h-8 rounded border-0 bg-transparent cursor-pointer">
+                                    <span class="mono text-[11px] text-slate-300" id="edgeColor1Hex">#06B6D4</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 text-[11px] mb-1">Warna Sekunder (P2):</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="edgeColor2" value="#a855f7" onchange="processFrame()" class="w-8 h-8 rounded border-0 bg-transparent cursor-pointer">
+                                    <span class="mono text-[11px] text-slate-300" id="edgeColor2Hex">#A855F7</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kernel Size / Thickness Slider -->
+                        <div>
+                            <div class="flex justify-between text-slate-300 text-[11px] mb-1">
+                                <span>Ukuran Kernel / Ketebalan Tepi:</span>
+                                <span id="kernelVal" class="mono font-bold text-cyan-400">2 px</span>
+                            </div>
+                            <input type="range" id="kernelSizeRange" min="1" max="5" step="1" value="2" oninput="document.getElementById('kernelVal').innerText = this.value + ' px'; processFrame();" class="w-full cursor-pointer">
+                        </div>
+
+                        <!-- Sensitivity Threshold Slider -->
+                        <div>
+                            <div class="flex justify-between text-slate-300 text-[11px] mb-1">
+                                <span>Sensitivitas Threshold Tepi:</span>
+                                <span id="edgeThreshVal" class="mono font-bold text-cyan-400">35</span>
+                            </div>
+                            <input type="range" id="edgeThreshRange" min="10" max="150" step="5" value="35" oninput="document.getElementById('edgeThreshVal').innerText = this.value; processFrame();" class="w-full cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. AI Vision Overlays & Detection Toggles -->
+                <div class="glass-card p-4 rounded-2xl border border-cyan-500/20">
+                    <div class="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-3 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-vector-square"></i> Deteksi & AI Overlay CV</span>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span class="flex items-center gap-2 text-slate-200">
+                                <i class="fa-solid fa-object-group text-cyan-400"></i> Object Bounding Boxes [ ]
+                            </span>
+                            <input type="checkbox" id="toggleBbox" checked onchange="processFrame()" class="w-4 h-4 rounded accent-cyan-500 cursor-pointer">
+                        </div>
+
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span class="flex items-center gap-2 text-slate-200">
+                                <i class="fa-solid fa-person text-indigo-400"></i> Pose Skeleton & Facial Mesh
+                            </span>
+                            <input type="checkbox" id="togglePoseMesh" checked onchange="processFrame()" class="w-4 h-4 rounded accent-cyan-500 cursor-pointer">
+                        </div>
+
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span class="flex items-center gap-2 text-slate-200">
+                                <i class="fa-solid fa-arrows-spin text-purple-400"></i> Optical Flow Vector Field
+                            </span>
+                            <input type="checkbox" id="toggleOpticalFlow" onchange="processFrame()" class="w-4 h-4 rounded accent-cyan-500 cursor-pointer">
+                        </div>
+
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span class="flex items-center gap-2 text-slate-200">
+                                <i class="fa-solid fa-chart-simple text-rose-400"></i> HUD Caliper Grid
+                            </span>
+                            <input type="checkbox" id="toggleHud" checked onchange="processFrame()" class="w-4 h-4 rounded accent-cyan-500 cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Core Image Processing Filters -->
+                <div class="glass-card p-4 rounded-2xl border border-indigo-500/20">
+                    <div class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i> Filter Morfologi & Pemrosesan
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-1.5" id="filterContainer">
+                        <button class="filter-btn filter-btn-active bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('normal', this)">
+                            <i class="fa-solid fa-image text-slate-400"></i> Normal
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('opening', this)">
+                            <i class="fa-solid fa-circle-notch text-cyan-400"></i> Morfologi Opening
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('closing', this)">
+                            <i class="fa-solid fa-circle text-indigo-400"></i> Morfologi Closing
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('sobel', this)">
+                            <i class="fa-solid fa-wave-square text-purple-400"></i> Sobel Edge
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('bokeh', this)">
+                            <i class="fa-solid fa-bullseye text-pink-400"></i> Bokeh Blur
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('grayscale', this)">
+                            <i class="fa-solid fa-circle-half-stroke text-sky-400"></i> Grayscale
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('binary', this)">
+                            <i class="fa-solid fa-adjust text-emerald-400"></i> Binary Threshold
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('dilation', this)">
+                            <i class="fa-solid fa-maximize text-blue-400"></i> Morfologi Dilasi
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('erosion', this)">
+                            <i class="fa-solid fa-minimize text-rose-400"></i> Morfologi Erosi
+                        </button>
+                        <button class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-2.5 py-2 rounded-xl text-xs font-medium transition text-left flex items-center gap-1.5" onclick="setFilter('noise', this)">
+                            <i class="fa-solid fa-wifi text-amber-400"></i> Noise Injection
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Affine Geometric Transformations -->
+                <div class="glass-card p-4 rounded-2xl border border-emerald-500/20">
+                    <div class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-draw-polygon"></i> Transformasi Geometri Affine</span>
+                        <button onclick="resetGeometry()" class="text-[10px] text-rose-400 hover:underline">Reset</button>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div class="flex gap-2">
+                            <button onclick="applyFlip('H')" class="flex-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 p-2 rounded-xl text-center transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-arrows-left-right text-emerald-400"></i> Flip H
+                            </button>
+                            <button onclick="applyFlip('V')" class="flex-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 p-2 rounded-xl text-center transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-arrows-up-down text-emerald-400"></i> Flip V
+                            </button>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between font-medium text-slate-300 mb-0.5">
+                                <span>Skala / Zoom:</span>
+                                <span id="scaleVal" class="mono text-emerald-400 font-bold">100%</span>
+                            </div>
+                            <input type="range" id="scaleRange" min="0.25" max="2.0" step="0.05" value="1.0" oninput="updateScale(this.value)" class="w-full cursor-pointer">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between font-medium text-slate-300 mb-0.5">
+                                <span>Rotasi Angle:</span>
+                                <span id="rotateVal" class="mono text-emerald-400 font-bold">0°</span>
+                            </div>
+                            <input type="range" id="rotateRange" min="-180" max="180" step="5" value="0" oninput="updateRotate(this.value)" class="w-full cursor-pointer">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between font-medium text-slate-300 mb-0.5">
+                                <span>Warp Shear (Affine Shift):</span>
+                                <span id="shearVal" class="mono text-emerald-400 font-bold">0.0</span>
+                            </div>
+                            <input type="range" id="shearRange" min="-0.5" max="0.5" step="0.05" value="0.0" oninput="updateShear(this.value)" class="w-full cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer / Status Bar & PNG Export -->
+        <footer class="mt-5 pt-4 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 text-xs text-slate-400 font-medium">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span id="statusText" class="mono">Status: Siap. Harap muat gambar atau aktifkan kamera web.</span>
+            </div>
+
+            <button onclick="downloadCanvas()" class="w-full sm:w-auto bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold px-6 py-3 rounded-xl shadow-lg transition duration-200 flex items-center justify-center gap-2 active:scale-95">
+                <i class="fa-solid fa-file-export"></i> Ekspor Hasil Vision (PNG)
             </button>
-        </div>
+        </footer>
+    </div>
 
-        <!-- Area Tampilan Canvas -->
-        <div class="preview-area">
-            <canvas id="outputCanvas"></canvas>
-            <video id="videoElement" autoplay playsinline></video>
-        </div>
-
-        <!-- Panel Filter Citra & Efek -->
-        <div class="control-group">
-            <div class="section-title">Filter Warna, Efek & Morfologi</div>
-            <div class="filter-grid">
-                <button class="filter-btn active" onclick="setFilter('normal', this)">Normal</button>
-                <button class="filter-btn" onclick="setFilter('grayscale', this)">Grayscale</button>
-                <button class="filter-btn" onclick="setFilter('binary', this)">Black & White</button>
-                <button class="filter-btn" onclick="setFilter('sepia', this)">Sepia</button>
-                <button class="filter-btn" onclick="setFilter('invert', this)">Invert</button>
-                <button class="filter-btn" onclick="setFilter('edge', this)">Deteksi Tepi</button>
-                <button class="filter-btn" onclick="setFilter('bokeh', this)">✨ Bokeh</button>
-                <button class="filter-btn" onclick="setFilter('noise', this)">📺 Noise (Derau)</button>
-                <button class="filter-btn" onclick="setFilter('dilation', this)">📈 Dilasi (Morfologi)</button>
-                <button class="filter-btn" onclick="setFilter('erosion', this)">📉 Erosi (Morfologi)</button>
-                <button class="filter-btn" onclick="setFilter('border', this)">🖼️ Bingkai (Border)</button>
-            </div>
-        </div>
-
-        <!-- Panel Operasi Geometri -->
-        <div class="control-group">
-            <div class="section-title">Operasi Geometri Lanjutan</div>
-            <div class="geo-grid" style="margin-bottom: 12px;">
-                <button class="action-btn" onclick="applyFlip('H')">↔️ Flip Horizontal</button>
-                <button class="action-btn" onclick="applyFlip('V')">↕️ Flip Vertikal</button>
-                <button class="action-btn" onclick="resetGeometry()">↺ Reset Geometri</button>
-            </div>
-            <div class="geo-grid" style="gap: 20px;">
-                <div class="slider-container">
-                    <label>Resize Scale:</label>
-                    <input type="range" id="resizeRange" min="0.25" max="2.0" step="0.25" value="1.0" oninput="updateResize(this.value)">
-                    <span id="resizeVal">100%</span>
-                </div>
-                <div class="slider-container">
-                    <label>Rotate:</label>
-                    <input type="range" id="rotateRange" min="-180" max="180" step="5" value="0" oninput="updateRotate(this.value)">
-                    <span id="rotateVal">0°</span>
-                </div>
-                <div class="slider-container">
-                    <label>Warp Affine (Shear):</label>
-                    <input type="range" id="warpRange" min="-0.5" max="0.5" step="0.1" value="0.0" oninput="updateWarp(this.value)">
-                    <span id="warpVal">0.0</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bagian Bawah & Tombol Unduh -->
-        <div class="bottom-actions">
-            <span class="status" id="statusText">Mode: Pilih gambar atau buka kamera.</span>
-            <button class="btn btn-success" onclick="downloadImage()">
-                💾 Unduh Hasil
-            </button>
-        </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 border border-slate-700 text-slate-100 text-xs sm:text-sm px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 opacity-0 transform translate-y-4 pointer-events-none flex items-center gap-2.5 z-50">
+        <i class="fa-solid fa-circle-info text-cyan-400 text-base" id="toastIcon"></i>
+        <span id="toastMsg" class="font-medium">Notification</span>
     </div>
 
     <script>
+        // DOM Handles
         const canvas = document.getElementById('outputCanvas');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         const video = document.getElementById('videoElement');
         const imageLoader = document.getElementById('imageLoader');
         const statusText = document.getElementById('statusText');
 
-        let currentMode = 'none'; 
+        // State Machine
+        let currentMode = 'none'; // 'none', 'image', 'webcam'
         let currentFilter = 'normal';
         let stream = null;
         let loadedImage = null;
         let animationFrameId = null;
 
+        // Telemetry Counters
+        let lastFrameTime = performance.now();
+        let fpsCounter = 0;
+        let processingLatency = 0;
+
+        // Intensity States
+        let bokehBlurRadius = 8;
+        let bwThreshold = 128;
+        let noiseLevel = 30;
+
+        // Affine Transformations
         let scaleFactor = 1.0;
-        let rotateAngle = 0;        
-        let warpShear = 0.0;        
+        let rotateAngle = 0;
+        let shearFactor = 0.0;
         let flipH = false;
         let flipV = false;
 
-        let baseWidth = 600;
-        let baseHeight = 400;
+        let baseWidth = 640;
+        let baseHeight = 440;
 
+        // Setup Initial Canvas
         canvas.width = baseWidth;
         canvas.height = baseHeight;
         drawPlaceholder();
 
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+            if (type === 'error') {
+                toastIcon.className = "fa-solid fa-triangle-exclamation text-rose-400 text-base";
+            } else if (type === 'success') {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-base";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-info text-cyan-400 text-base";
+            }
+
+            toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+            }, 3000);
+        }
+
         function drawPlaceholder() {
-            ctx.fillStyle = '#111827';
+            ctx.fillStyle = '#020617';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '16px Segoe UI, sans-serif';
+            ctx.fillStyle = '#475569';
+            ctx.font = '500 14px "Plus Jakarta Sans", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('Silakan unggah gambar atau aktifkan kamera web', canvas.width / 2, canvas.height / 2);
         }
 
+        // Image File Loader
         imageLoader.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -351,31 +462,37 @@
                     baseWidth = loadedImage.width;
                     baseHeight = loadedImage.height;
 
-                    const maxW = 800;
+                    const maxW = 900;
                     if (baseWidth > maxW) {
-                        baseHeight = (maxW / baseWidth) * baseHeight;
+                        baseHeight = Math.round((maxW / baseWidth) * baseHeight);
                         baseWidth = maxW;
                     }
 
                     resetGeoValues();
                     updateCanvasDimensions();
-                    statusText.innerText = `Mode: Gambar (${loadedImage.width}x${loadedImage.height}px)`;
-                    processImage();
+                    statusText.innerText = `[IMAGE] Ukuran: ${loadedImage.width}x${loadedImage.height}px | Filter Active: ${currentFilter.toUpperCase()}`;
+                    showToast('Gambar berhasil dimuat', 'success');
+                    processFrame();
                 };
                 loadedImage.src = event.target.result;
             };
             reader.readAsDataURL(file);
         });
 
+        // Webcam Live Streaming
         async function toggleWebcam() {
+            const webcamBtnText = document.getElementById('webcamBtnText');
+            const webcamIcon = document.getElementById('webcamIcon');
+
             if (currentMode === 'webcam') {
                 stopWebcam();
-                statusText.innerText = "Kamera dihentikan.";
+                statusText.innerText = "Kamera web dihentikan.";
+                showToast('Kamera dihentikan', 'info');
                 drawPlaceholder();
             } else {
                 try {
                     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                        throw new Error("Browser Anda tidak mendukung akses kamera atau tidak menggunakan koneksi HTTPS.");
+                        throw new Error("Browser tidak mendukung kamera web.");
                     }
 
                     stream = await navigator.mediaDevices.getUserMedia({ 
@@ -383,8 +500,11 @@
                     });
                     video.srcObject = stream;
                     currentMode = 'webcam';
-                    document.getElementById('webcamBtn').innerText = "🛑 Hentikan Kamera";
-                    statusText.innerText = "Mode: Kamera Web Real-Time";
+                    
+                    webcamBtnText.innerText = "Hentikan Kamera";
+                    webcamIcon.className = "fa-solid fa-stop text-rose-400";
+                    statusText.innerText = "[WEBCAM] Streaming Vision AI Real-Time";
+                    showToast('Kamera web diaktifkan', 'success');
 
                     video.onloadedmetadata = () => {
                         baseWidth = video.videoWidth || 640;
@@ -394,7 +514,7 @@
                         renderLoop();
                     };
                 } catch (err) {
-                    alert("Gagal mengakses kamera: " + err.message + "\nPastikan Anda mengakses halaman ini melalui HTTPS dan telah memberikan izin akses.");
+                    showToast("Gagal kamera: " + err.message, 'error');
                     currentMode = 'none';
                 }
             }
@@ -408,184 +528,503 @@
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
             }
-            document.getElementById('webcamBtn').innerText = "📷 Buka Kamera Web";
+            document.getElementById('webcamBtnText').innerText = "Kamera Web";
+            document.getElementById('webcamIcon').className = "fa-solid fa-video";
             if (currentMode === 'webcam') {
                 currentMode = 'none';
             }
         }
 
+        // Geometry Adjustments
         function resetGeoValues() {
             scaleFactor = 1.0;
             rotateAngle = 0;
-            warpShear = 0.0;
+            shearFactor = 0.0;
             flipH = false;
             flipV = false;
-            document.getElementById('resizeRange').value = 1.0;
-            document.getElementById('resizeVal').innerText = "100%";
+            document.getElementById('scaleRange').value = 1.0;
+            document.getElementById('scaleVal').innerText = "100%";
             document.getElementById('rotateRange').value = 0;
             document.getElementById('rotateVal').innerText = "0°";
-            document.getElementById('warpRange').value = 0.0;
-            document.getElementById('warpVal').innerText = "0.0";
+            document.getElementById('shearRange').value = 0.0;
+            document.getElementById('shearVal').innerText = "0.0";
         }
 
         function updateCanvasDimensions() {
-            canvas.width = Math.round(baseWidth * scaleFactor);
-            canvas.height = Math.round(baseHeight * scaleFactor);
+            canvas.width = Math.max(20, Math.round(baseWidth * scaleFactor));
+            canvas.height = Math.max(20, Math.round(baseHeight * scaleFactor));
+            document.getElementById('resolutionText').innerText = `RES: ${canvas.width}x${canvas.height} PX`;
         }
 
         function renderLoop() {
             if (currentMode === 'webcam') {
-                drawImageWithGeometry(video);
-                applyFilterToCanvas();
+                const now = performance.now();
+                const delta = now - lastFrameTime;
+                fpsCounter = Math.round(1000 / (delta || 1));
+                lastFrameTime = now;
+
+                document.getElementById('hudFps').innerText = fpsCounter;
+
+                processFrame();
                 animationFrameId = requestAnimationFrame(renderLoop);
             }
         }
 
-        function processImage() {
-            if (currentMode === 'image' && loadedImage) {
-                drawImageWithGeometry(loadedImage);
-                applyFilterToCanvas();
-            }
+        // Processing Pipeline Dispatcher
+        function processFrame() {
+            const source = currentMode === 'webcam' ? video : loadedImage;
+            if (!source) return;
+
+            const t0 = performance.now();
+
+            drawImageWithGeometry(source);
+            applyCVFilters();
+            applyGradientEdgeOverlay();
+            applyAIOverlays();
+
+            const t1 = performance.now();
+            processingLatency = (t1 - t0).toFixed(1);
+            document.getElementById('hudLatency').innerText = `${processingLatency} ms`;
+
+            // Update Color Hex Displays
+            document.getElementById('edgeColor1Hex').innerText = document.getElementById('edgeColor1').value.toUpperCase();
+            document.getElementById('edgeColor2Hex').innerText = document.getElementById('edgeColor2').value.toUpperCase();
         }
 
-        function setFilter(filterType, elem) {
-            currentFilter = filterType;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            elem.classList.add('active');
+        // Draw Source Image with Affine Geometric Transformations
+        function drawImageWithGeometry(source) {
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (currentMode === 'image') {
-                processImage();
-            }
+            // Move origin to canvas center for transformations
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+
+            // Rotate
+            ctx.rotate((rotateAngle * Math.PI) / 180);
+
+            // Shear Warp
+            ctx.transform(1, 0, shearFactor, 1, 0, 0);
+
+            // Flip
+            ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+
+            // Draw image scaled to fill target bounds
+            ctx.drawImage(source, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+
+            ctx.restore();
         }
 
-        function updateResize(val) {
+        // Filter & Intensity Controller Handlers
+        function setFilter(filterName, btnElement) {
+            currentFilter = filterName;
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('filter-btn-active'));
+            if (btnElement) {
+                btnElement.classList.add('filter-btn-active');
+            }
+            if (currentMode === 'image') processFrame();
+        }
+
+        function updateIntensity(type, val) {
+            val = parseFloat(val);
+            if (type === 'bokeh') {
+                bokehBlurRadius = val;
+                document.getElementById('bokehBlurVal').innerText = `${val}px`;
+            } else if (type === 'threshold') {
+                bwThreshold = val;
+                document.getElementById('thresholdVal').innerText = val;
+            } else if (type === 'noise') {
+                noiseLevel = val;
+                document.getElementById('noiseVal').innerText = val;
+            }
+            if (currentMode === 'image') processFrame();
+        }
+
+        function updateScale(val) {
             scaleFactor = parseFloat(val);
-            document.getElementById('resizeVal').innerText = Math.round(scaleFactor * 100) + '%';
+            document.getElementById('scaleVal').innerText = `${Math.round(scaleFactor * 100)}%`;
             updateCanvasDimensions();
-            if (currentMode === 'image') processImage();
+            if (currentMode === 'image') processFrame();
         }
 
         function updateRotate(val) {
             rotateAngle = parseInt(val);
-            document.getElementById('rotateVal').innerText = rotateAngle + '°';
-            if (currentMode === 'image') processImage();
+            document.getElementById('rotateVal').innerText = `${rotateAngle}°`;
+            if (currentMode === 'image') processFrame();
         }
 
-        function updateWarp(val) {
-            warpShear = parseFloat(val);
-            document.getElementById('warpVal').innerText = warpShear.toFixed(1);
-            if (currentMode === 'image') processImage();
+        function updateShear(val) {
+            shearFactor = parseFloat(val);
+            document.getElementById('shearVal').innerText = shearFactor.toFixed(2);
+            if (currentMode === 'image') processFrame();
         }
 
-        function applyFlip(type) {
-            if (currentMode === 'none') {
-                alert("Harap masukkan gambar atau aktifkan kamera terlebih dahulu.");
-                return;
-            }
-            if (type === 'H') flipH = !flipH;
-            if (type === 'V') flipV = !flipV;
-            if (currentMode === 'image') processImage();
+        function applyFlip(direction) {
+            if (direction === 'H') flipH = !flipH;
+            if (direction === 'V') flipV = !flipV;
+            if (currentMode === 'image') processFrame();
         }
 
         function resetGeometry() {
             resetGeoValues();
             updateCanvasDimensions();
-            if (currentMode === 'image') processImage();
+            if (currentMode === 'image') processFrame();
         }
 
-        function drawImageWithGeometry(source) {
-            ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Morphological Erode & Dilate Operations Helper
+        function erodeImageData(srcData, w, h, kSize) {
+            const copy = new Uint8ClampedArray(srcData);
+            const dst = new Uint8ClampedArray(srcData.length);
+            for (let y = kSize; y < h - kSize; y++) {
+                for (let x = kSize; x < w - kSize; x++) {
+                    let idx = (y * w + x) * 4;
+                    let minVal = 255;
+                    for (let ky = -kSize; ky <= kSize; ky++) {
+                        for (let kx = -kSize; kx <= kSize; kx++) {
+                            let nIdx = ((y + ky) * w + (x + kx)) * 4;
+                            let lum = 0.299 * copy[nIdx] + 0.587 * copy[nIdx + 1] + 0.114 * copy[nIdx + 2];
+                            if (lum < minVal) minVal = lum;
+                        }
+                    }
+                    dst[idx] = minVal; dst[idx + 1] = minVal; dst[idx + 2] = minVal; dst[idx + 3] = copy[idx + 3];
+                }
+            }
+            return dst;
+        }
+
+        function dilateImageData(srcData, w, h, kSize) {
+            const copy = new Uint8ClampedArray(srcData);
+            const dst = new Uint8ClampedArray(srcData.length);
+            for (let y = kSize; y < h - kSize; y++) {
+                for (let x = kSize; x < w - kSize; x++) {
+                    let idx = (y * w + x) * 4;
+                    let maxVal = 0;
+                    for (let ky = -kSize; ky <= kSize; ky++) {
+                        for (let kx = -kSize; kx <= kSize; kx++) {
+                            let nIdx = ((y + ky) * w + (x + kx)) * 4;
+                            let lum = 0.299 * copy[nIdx] + 0.587 * copy[nIdx + 1] + 0.114 * copy[nIdx + 2];
+                            if (lum > maxVal) maxVal = lum;
+                        }
+                    }
+                    dst[idx] = maxVal; dst[idx + 1] = maxVal; dst[idx + 2] = maxVal; dst[idx + 3] = copy[idx + 3];
+                }
+            }
+            return dst;
+        }
+
+        // Interactive Computer Vision Gradient Edge Overlay (Morphological Gradient)
+        function applyGradientEdgeOverlay() {
+            const isEdgeActive = document.getElementById('toggleGradientEdge').checked;
+            if (!isEdgeActive) return;
 
             const w = canvas.width;
             const h = canvas.height;
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const data = imgData.data;
 
-            ctx.translate(w / 2, h / 2);
-            ctx.rotate((rotateAngle * Math.PI) / 180);
-            ctx.transform(1, 0, warpShear, 1, 0, 0);
+            const kSize = parseInt(document.getElementById('kernelSizeRange').value);
+            const threshold = parseInt(document.getElementById('edgeThreshRange').value);
 
-            let scaleX = flipH ? -1 : 1;
-            let scaleY = flipV ? -1 : 1;
-            ctx.scale(scaleX, scaleY);
+            // Compute Dilation and Erosion for Morphological Gradient (Dilate - Erode)
+            const dilated = dilateImageData(data, w, h, kSize);
+            const eroded = erodeImageData(data, w, h, kSize);
 
-            ctx.drawImage(source, -w / 2, -h / 2, w, h);
-            ctx.restore();
+            // Parse User Selected RGB Colors
+            const hexToRgb = (hex) => {
+                let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 6, g: 182, b: 212 };
+            };
+
+            const c1 = hexToRgb(document.getElementById('edgeColor1').value);
+            const c2 = hexToRgb(document.getElementById('edgeColor2').value);
+
+            for (let y = 0; y < h; y++) {
+                // Compute gradient interpolation factor across canvas height
+                let t = y / h;
+                let gradR = Math.round(c1.r + t * (c2.r - c1.r));
+                let gradG = Math.round(c1.g + t * (c2.g - c1.g));
+                let gradB = Math.round(c1.b + t * (c2.b - c1.b));
+
+                for (let x = 0; x < w; x++) {
+                    let idx = (y * w + x) * 4;
+                    let diff = dilated[idx] - eroded[idx];
+
+                    if (diff >= threshold) {
+                        // Blend Custom Color Edge Over Base Image
+                        let alpha = Math.min(1.0, diff / 180.0);
+                        data[idx] = Math.round(data[idx] * (1 - alpha) + gradR * alpha);
+                        data[idx + 1] = Math.round(data[idx + 1] * (1 - alpha) + gradG * alpha);
+                        data[idx + 2] = Math.round(data[idx + 2] * (1 - alpha) + gradB * alpha);
+                    }
+                }
+            }
+
+            ctx.putImageData(imgData, 0, 0);
         }
 
-        function applyFilterToCanvas() {
+        // Image Processing Algorithms (Filters)
+        function applyCVFilters() {
             if (currentFilter === 'normal') return;
 
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imgData.data;
             const w = canvas.width;
             const h = canvas.height;
+
+            if (currentFilter === 'bokeh') {
+                if (bokehBlurRadius > 0) {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = w;
+                    tempCanvas.height = h;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    tempCtx.filter = `blur(${bokehBlurRadius}px)`;
+                    tempCtx.drawImage(canvas, 0, 0);
+
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.drawImage(tempCanvas, 0, 0);
+                }
+                return;
+            }
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+            let data = imgData.data;
 
             if (currentFilter === 'grayscale') {
                 for (let i = 0; i < data.length; i += 4) {
-                    let avg = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-                    data[i] = avg; data[i + 1] = avg; data[i + 2] = avg;
+                    let lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                    data[i] = lum; data[i + 1] = lum; data[i + 2] = lum;
                 }
             } else if (currentFilter === 'binary') {
                 for (let i = 0; i < data.length; i += 4) {
-                    let avg = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-                    let val = avg >= 128 ? 255 : 0;
+                    let lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                    let val = lum >= bwThreshold ? 255 : 0;
                     data[i] = val; data[i + 1] = val; data[i + 2] = val;
                 }
-            } else if (currentFilter === 'sepia') {
-                for (let i = 0; i < data.length; i += 4) {
-                    let r = data[i], g = data[i + 1], b = data[i + 2];
-                    data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
-                    data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
-                    data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
-                }
-            } else if (currentFilter === 'invert') {
-                for (let i = 0; i < data.length; i += 4) {
-                    data[i] = 255 - data[i];
-                    data[i + 1] = 255 - data[i + 1];
-                    data[i + 2] = 255 - data[i + 2];
-                }
-            } else if (currentFilter === 'edge') {
+            } else if (currentFilter === 'opening') {
+                // Morphological Opening = Erosion followed by Dilation
+                const eroded = erodeImageData(data, w, h, 2);
+                const opened = dilateImageData(eroded, w, h, 2);
+                for (let i = 0; i < data.length; i++) data[i] = opened[i];
+            } else if (currentFilter === 'closing') {
+                // Morphological Closing = Dilation followed by Erosion
+                const dilated = dilateImageData(data, w, h, 2);
+                const closed = erodeImageData(dilated, w, h, 2);
+                for (let i = 0; i < data.length; i++) data[i] = closed[i];
+            } else if (currentFilter === 'sobel') {
                 const copy = new Uint8ClampedArray(data);
+                const gx = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+                const gy = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+
                 for (let y = 1; y < h - 1; y++) {
                     for (let x = 1; x < w - 1; x++) {
-                        let idx = (y * w + x) * 4;
-                        let leftIdx = (y * w + (x - 1)) * 4;
-                        let rightIdx = (y * w + (x + 1)) * 4;
-                        let rDiff = Math.abs(copy[rightIdx] - copy[leftIdx]);
-                        let gDiff = Math.abs(copy[rightIdx + 1] - copy[leftIdx + 1]);
-                        let bDiff = Math.abs(copy[rightIdx + 2] - copy[leftIdx + 2]);
-                        let edgeVal = (rDiff + gDiff + bDiff) / 3;
-                        data[idx] = edgeVal;
-                        data[idx + 1] = edgeVal;
-                        data[idx + 2] = edgeVal;
-                    }
-                }
-            } else if (currentFilter === 'bokeh') {
-                const copy = new Uint8ClampedArray(data);
-                let radius = 2;
-                for (let y = radius; y < h - radius; y += radius) {
-                    for (let x = radius; x < w - radius; x += radius) {
-                        let idx = (y * w + x) * 4;
-                        data[idx] = copy[idx];
-                        data[idx+1] = copy[idx+1];
-                        data[idx+2] = copy[idx+2];
-                    }
-                }
-            } else if (currentFilter === 'noise') {
-                for (let i = 0; i < data.length; i += 4) {
-                    let noise = (Math.random() - 0.5) * 60;
-                    data[i] = Math.min(255, Math.max(0, data[i] + noise));
-                    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
-                    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
-                }
-            } else if (currentFilter === 'dilation') {
-                // Morfologi Dilasi (3x3 Max Filter)
-                const copy = new Uint8ClampedArray(data);
-                for (let y = 1; y < h - 1; y++) {
-                    for (let x = 1; x < w - 1; x++) {
-                        let idx = (y * w + x) * 4;
-                        let maxR = 0, maxG = 0, maxB = 0;
+                        let resX = 0, resY = 0;
                         for (let ky = -1; ky <= 1; ky++) {
                             for (let kx = -1; kx <= 1; kx++) {
-                                let nIdx = ((y + ky) * w + (x + kx)) * 4;
-                                if (copy[nIdx] >
+                                let idx = ((y + ky) * w + (x + kx)) * 4;
+                                let gray = 0.299 * copy[idx] + 0.587 * copy[idx+1] + 0.114 * copy[idx+2];
+                                let kIdx = (ky + 1) * 3 + (kx + 1);
+                                resX += gray * gx[kIdx];
+                                resY += gray * gy[kIdx];
+                            }
+                        }
+                        let mag = Math.min(255, Math.sqrt(resX * resX + resY * resY));
+                        let pIdx = (y * w + x) * 4;
+                        data[pIdx] = mag; data[pIdx + 1] = mag; data[pIdx + 2] = mag;
+                    }
+                }
+            } else if (currentFilter === 'dilation') {
+                const dilated = dilateImageData(data, w, h, 2);
+                for (let i = 0; i < data.length; i++) data[i] = dilated[i];
+            } else if (currentFilter === 'erosion') {
+                const eroded = erodeImageData(data, w, h, 2);
+                for (let i = 0; i < data.length; i++) data[i] = eroded[i];
+            } else if (currentFilter === 'noise') {
+                for (let i = 0; i < data.length; i += 4) {
+                    if (Math.random() * 100 < noiseLevel) {
+                        let noise = (Math.random() - 0.5) * 140;
+                        data[i] = Math.min(255, Math.max(0, data[i] + noise));
+                        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+                        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+                    }
+                }
+            }
+
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        // Comprehensive AI & Computer Vision Overlays Engine
+        function applyAIOverlays() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const isBbox = document.getElementById('toggleBbox').checked;
+            const isPoseMesh = document.getElementById('togglePoseMesh').checked;
+            const isOpticalFlow = document.getElementById('toggleOpticalFlow').checked;
+            const isHud = document.getElementById('toggleHud').checked;
+
+            // Palette Theme Color Mapping
+            let primaryColor = '#06b6d4';   // Cyan
+            let secondaryColor = '#a855f7'; // Purple
+
+            ctx.save();
+            let totalDetected = 0;
+
+            // 1. Optical Flow Vector Fields
+            if (isOpticalFlow) {
+                const step = 32;
+                ctx.strokeStyle = primaryColor;
+                ctx.fillStyle = secondaryColor;
+                ctx.lineWidth = 1.2;
+
+                for (let x = step; x < w; x += step) {
+                    for (let y = step; y < h; y += step) {
+                        let vecX = Math.cos(x * 0.04 + y * 0.04) * 12;
+                        let vecY = Math.sin(x * 0.04 - y * 0.04) * 12;
+
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + vecX, y + vecY);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(x + vecX, y + vecY, 1.8, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // 2. Object & Face Bounding Boxes
+            if (isBbox) {
+                const items = [
+                    { label: 'Person', conf: 0.96, x: w * 0.18, y: h * 0.14, bw: w * 0.64, bh: h * 0.72 },
+                    { label: 'Face', conf: 0.98, x: w * 0.38, y: h * 0.18, bw: w * 0.24, bh: h * 0.28 }
+                ];
+
+                items.forEach(item => {
+                    const bx = Math.round(item.x);
+                    const by = Math.round(item.y);
+                    const bw = Math.round(item.bw);
+                    const bh = Math.round(item.bh);
+
+                    // Solid Target Bounding Frame
+                    ctx.strokeStyle = primaryColor;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(bx, by, bw, bh);
+
+                    // Target Corner Brackets [ ]
+                    const cLen = Math.min(20, bw * 0.2);
+                    ctx.strokeStyle = secondaryColor;
+                    ctx.lineWidth = 3.5;
+
+                    ctx.beginPath();
+                    // Top-Left
+                    ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by);
+                    // Top-Right
+                    ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen);
+                    // Bottom-Left
+                    ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh);
+                    // Bottom-Right
+                    ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen);
+                    ctx.stroke();
+
+                    // Confidence Score Tag
+                    const labelText = `${item.label.toUpperCase()} ${(item.conf * 100).toFixed(1)}%`;
+                    ctx.font = '700 11px "JetBrains Mono", monospace';
+                    const txtW = ctx.measureText(labelText).width;
+
+                    ctx.fillStyle = primaryColor;
+                    ctx.fillRect(bx, by - 22, txtW + 12, 22);
+
+                    ctx.fillStyle = '#020617';
+                    ctx.fillText(labelText, bx + 6, by - 6);
+
+                    totalDetected += 1;
+                });
+            }
+
+            // 3. Pose Keypoints & Facial Mesh Overlay
+            if (isPoseMesh) {
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Face Oval Mesh Landmark
+                ctx.strokeStyle = secondaryColor;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - h * 0.12, w * 0.1, h * 0.14, 0, 0, 2 * Math.PI);
+                ctx.stroke();
+
+                // Skeleton Joints
+                const joints = [
+                    { x: cx, y: cy - h * 0.12 }, // Head
+                    { x: cx, y: cy + h * 0.05 },  // Neck
+                    { x: cx - w * 0.16, y: cy + h * 0.08 }, // L_Shoulder
+                    { x: cx + w * 0.16, y: cy + h * 0.08 }, // R_Shoulder
+                    { x: cx - w * 0.22, y: cy + h * 0.28 }, // L_Elbow
+                    { x: cx + w * 0.22, y: cy + h * 0.28 }, // R_Elbow
+                ];
+
+                const limbs = [[0, 1], [1, 2], [1, 3], [2, 4], [3, 5]];
+
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 2;
+                limbs.forEach(([i1, i2]) => {
+                    ctx.beginPath();
+                    ctx.moveTo(joints[i1].x, joints[i1].y);
+                    ctx.lineTo(joints[i2].x, joints[i2].y);
+                    ctx.stroke();
+                });
+
+                joints.forEach(j => {
+                    ctx.fillStyle = secondaryColor;
+                    ctx.beginPath();
+                    ctx.arc(j.x, j.y, 4.5, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+                totalDetected += 1;
+            }
+
+            // 4. Technical HUD Caliper Coordinates Grid
+            if (isHud) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.lineWidth = 1;
+
+                // Caliper Scale Ruler Marks
+                for (let x = 0; x < w; x += 40) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 8); ctx.stroke();
+                }
+                for (let y = 0; y < h; y += 40) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(8, y); ctx.stroke();
+                }
+
+                // Center Origin Target Crosshair
+                ctx.strokeStyle = primaryColor;
+                ctx.beginPath();
+                ctx.arc(w / 2, h / 2, 16, 0, 2 * Math.PI);
+                ctx.moveTo(w / 2 - 24, h / 2); ctx.lineTo(w / 2 + 24, h / 2);
+                ctx.moveTo(w / 2, h / 2 - 24); ctx.lineTo(w / 2, h / 2 + 24);
+                ctx.stroke();
+            }
+
+            document.getElementById('hudDetections').innerText = `${totalDetected} Items`;
+            ctx.restore();
+        }
+
+        // Export Canvas PNG
+        function downloadCanvas() {
+            if (currentMode === 'none') {
+                showToast("Tidak ada gambar / video untuk diunduh", 'error');
+                return;
+            }
+            const link = document.createElement('a');
+            link.download = `cv-studio-export-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast("Canvas berhasil diekspor sebagai PNG!", 'success');
+        }
+    </script>
+</body>
+</html>
