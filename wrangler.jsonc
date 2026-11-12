@@ -1,0 +1,18 @@
+
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "computervision",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-12",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "face-wajah",
+      "database_id": "3e26fa14-98b1-4f91-8db8-8bf699b728df"
+    }
+  ]
+}
